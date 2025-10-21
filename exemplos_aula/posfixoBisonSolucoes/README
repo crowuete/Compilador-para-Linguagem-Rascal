@@ -1,0 +1,16 @@
+
+1. Para gerar o executável posfixo: "make" 
+
+2. Para executar, edite um arquivo com alguma sentença válida (arquivo
+"entradaOk"), ou inválida ("entradaComErro"). 
+
+3. digite "posfixo < entradaCerta" ou "posfixo < entradaErrada" 
+   para a entrada "a+a*a-a", gera "AAA*+A-", e 
+   para a entrada "a+a*a--a", gera "syntax error "AAA*+"
+
+4. Para gerar o executável de todas as versões: "make all"
+
+Versões: posfixo  -> parser original
+         posfixo1 -> adiciona o identificador "b"
+         posfixo2 -> adiciona os operadores lógicos "and" e "or"
+         posfixo3 -> adiciona checagem de tipos nas operações
