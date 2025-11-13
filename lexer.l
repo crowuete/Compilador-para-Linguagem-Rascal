@@ -14,7 +14,7 @@ NUM         [0-9]+
 
 %%
 
-"program"           { return PROGRAM; }
+"program"           { return TK_PROGRAM; }
 "procedure"         { return PROCEDURE; }
 "function"          { return FUNCTION; }
 "begin"             { return KW_BEGIN; }
@@ -59,9 +59,3 @@ NUM         [0-9]+
 {ESPACO}            { /* ignora */ }
 
 .                   { printf("ERRO LÉXICO na linha %d: símbolo ilegal %c\n", yylineno, yytext[0]); }
-
-%%
-int yyerror(const char *s) {
-    fprintf(stderr, "ERRO SINTÁTICO na linha %d: %s\n", yylineno, s);
-    return 0;
-}
