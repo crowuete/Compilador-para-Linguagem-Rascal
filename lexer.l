@@ -58,4 +58,6 @@ NUM         [0-9]+
 
 {ESPACO}            { /* ignora */ }
 
-.                   { printf("ERRO LÉXICO na linha %d: símbolo ilegal %c\n", yylineno, yytext[0]); }
+.                   { printf("ERRO LÉXICO na linha %d: símbolo ilegal %c\n", yylineno, yytext[0]); return 0; }
+
+%%

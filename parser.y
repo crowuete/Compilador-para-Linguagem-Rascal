@@ -29,6 +29,9 @@ Tipo token_to_tipo(int token) {
 %left '*' '/' DIV
 %right NOT
 
+%nonassoc THEN
+%nonassoc ELSE
+
 %union{
     int ival;
     char* sval;
@@ -46,7 +49,7 @@ Tipo token_to_tipo(int token) {
 
 /* Tokens terminais (sem valor na união) */
 %token PROCEDURE FUNCTION KW_BEGIN END
-%token VAR IF THEN ELSE WHILE DO READ WRITE 
+%token VAR IF WHILE DO READ WRITE 
 %token INTEGER BOOLEAN TRUE FALSE ATRIB TK_PROGRAM
 
 /* Tokens terminais (com valor na união) */
