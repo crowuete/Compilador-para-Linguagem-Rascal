@@ -1,22 +1,13 @@
 %{
 #include <stdio.h>
 #include <string.h>
-#include <ast.h>
+#include "ast.h"
 
 int yylex(void);
 void yyerror(const char *);
 
-/* Tipos semânticos */
-typedef enum { T_INT, T_BOOL, T_VOID } Tipo;
+extern int yylineno;
 
-/* Função auxiliar para converter token para TipoSemantico */
-Tipo token_to_tipo(int token) {
-    switch (token) {
-        case INTEGER: return T_INT;
-        case BOOLEAN: return T_BOOL;
-        default: return T_VOID; // Tipo inválido
-    }
-}
 %}
 
 %define parse.error verbose
@@ -26,7 +17,7 @@ Tipo token_to_tipo(int token) {
 %left AND
 %left IGUAL DIF MENOR MENOR_IGUAL MAIOR MAIOR_IGUAL // Operadores de relação
 %left '+' '-'
-%left '*' '/' DIV
+%left '*' DIV
 %right NOT
 
 %nonassoc THEN
@@ -35,9 +26,8 @@ Tipo token_to_tipo(int token) {
 %union{
     int ival;
     char* sval;
-    AST* no;
     int tipo_token;
-    Tipo tipo_semantico;
+    TipoSemantico tipo_semantico;
     Expr* expr_no;
     Comando* cmd_no;
     Decl* decl_no;
@@ -74,7 +64,7 @@ Tipo token_to_tipo(int token) {
 /* ---------------------------------------------- */
 
 programa      
-    : TK_PROGRAM ID ';' bloco '.' { $$ = programa($2, $4); }
+    : TK_PROGRAM ID ';' bloco '.' { $$ = criar_programa($2, $4); free($2); }
     ;
 
 bloco         
@@ -102,8 +92,8 @@ declaracao_var
     ;
 
 lista_id
-    : ID { $$ = adiciona_id(NULL, $1); }
-    | lista_id ',' ID { $$ = adiciona_id($1, $3); }
+    : ID { $$ = adiciona_id(NULL, $1); free($1); }
+    | lista_id ',' ID { $$ = adiciona_id($1, $3); free($3); }
     ;
 
 tipo_var         
@@ -131,11 +121,11 @@ declaracao_subrotina
     ;
 
 declaracao_procedimento
-    : PROCEDURE ID parametros_formais_opcional ';' bloco_subrot { $$ = decl_procedure($2, $3, $5); }
+    : PROCEDURE ID parametros_formais_opcional ';' bloco_subrot { $$ = decl_procedure($2, $3, $5); free($2); }
     ;
 
 declaracao_funcao
-    : FUNCTION ID parametros_formais_opcional ':' tipo_var ';' bloco_subrot { $$ = decl_function($2, $3, $5, $7); }
+    : FUNCTION ID parametros_formais_opcional ':' tipo_var ';' bloco_subrot { $$ = decl_function($2, $3, $5, $7); free($2); }
     ;
 
 parametros_formais_opcional
@@ -184,12 +174,12 @@ comando
     ;
 
 atribuicao
-    : ID ATRIB expressao { $$ = cmd_atrib($1, $3); }
+    : ID ATRIB expressao { $$ = cmd_atrib($1, $3); free($1); }
     ;
 
 chamada_procedimento
-    : ID { $$ = cmd_call_proc($1, NULL); } // Procedimento sem argumentos
-    | ID '(' lista_exp ')' { $$ = cmd_call_proc($1, $3); } // Procedimento com argumentos
+    : ID { $$ = cmd_call_proc($1, NULL); free($1); } // Procedimento sem argumentos
+    | ID '(' lista_exp ')' { $$ = cmd_call_proc($1, $3); free($1); } // Procedimento com argumentos
     ;
 
 condicional
@@ -257,18 +247,12 @@ fator
     ;
 
 id_ou_chamada_funcao
-    : ID { $$ = expr_id($1); }
-    | ID '(' lista_exp ')' { $$ = expr_call_func($1, $3); }
+    : ID { $$ = expr_id($1); free($1); }
+    | ID '(' lista_exp ')' { $$ = expr_call_func($1, $3); free($1); }
     ;
 
 %%
 
 void yyerror(const char * msg){
-   fprintf(stderr, "ERRO SINTÁTICO na linha %d: %s\n", yylineno, msg);
-}
-
-int main (int argc, char** argv) {
-   yyparse();
-   printf("\n");
-   return 0;
+    fprintf(stderr, "ERRO SINTÁTICO na linha %d: %s\n", yylineno, msg);
 }

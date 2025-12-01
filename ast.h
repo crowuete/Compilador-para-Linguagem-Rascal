@@ -62,6 +62,22 @@ struct Expr {
 
 
 // ----------------------------------------------------------------------
+// 5. PARÂMETROS (ParamDecl)
+// ----------------------------------------------------------------------
+
+// Usado para lista_id e para a lista de IDs dentro de ParamDecl
+typedef struct IdList {
+    char* nome;
+    struct IdList* prox;
+} IdList;
+
+struct ParamDecl {
+    IdList* ids;
+    TipoSemantico tipo_param;
+    struct ParamDecl* prox; // Lista de declarações de parâmetros (para múltiplos tipos)
+};
+
+// ----------------------------------------------------------------------
 // 3. COMANDOS (Comando)
 // ----------------------------------------------------------------------
 
@@ -86,7 +102,7 @@ struct Comando {
         
         struct { Expr* lista_exp; } escrita; // WRITE (lista de expressões)
         
-        struct { Expr* lista_id; } leitura; // READ (lista de IDs, representadas como EXPR_VAR)
+        struct { IdList* lista_id; } leitura; // READ (lista de IDs, representadas como EXPR_VAR)
         
         struct { char* nome; Expr* args_lista; } proc_call; // Chamada de procedimento
         
@@ -107,12 +123,6 @@ typedef enum {
     DECL_FUNCTION 
 } TipoDecl;
 
-// Usado para lista_id e para a lista de IDs dentro de ParamDecl
-typedef struct IdList {
-    char* nome;
-    struct IdList* prox;
-} IdList;
-
 struct Decl {
     TipoDecl tipo;
     Decl* prox; // Lista de declarações (var ou sub-rotinas)
@@ -130,17 +140,6 @@ struct Decl {
             TipoSemantico tipo_retorno; // Apenas para FUNCTION
         } subrot;
     } u;
-};
-
-
-// ----------------------------------------------------------------------
-// 5. PARÂMETROS (ParamDecl)
-// ----------------------------------------------------------------------
-
-struct ParamDecl {
-    IdList* ids;
-    TipoSemantico tipo_param;
-    struct ParamDecl* prox; // Lista de declarações de parâmetros (para múltiplos tipos)
 };
 
 
@@ -202,7 +201,7 @@ ParamDecl* adiciona_param_decl(ParamDecl* lista, ParamDecl* novo);
 Bloco* criar_bloco(Decl* decls_var, Decl* decls_subrotinas, Comando* comandos);
 
 // Raiz
-Programa* programa(char* nome, Bloco* bloco_principal);
+Programa* criar_programa(char* nome, Bloco* bloco_principal);
 
 // Funções de Liberação de Memória
 void expr_free(Expr* e);
@@ -211,5 +210,19 @@ void prog_free(Programa* p);
 void ast_free(Programa* raiz_ast);
 
 extern Programa* raiz_ast;
+
+// ----------------------------------------------------------------------
+// 9. Funções de Impressão da AST (Debug)
+// ----------------------------------------------------------------------
+
+char* tipo_semantico_to_string(TipoSemantico tipo);
+char* token_to_string(int token_op);
+
+void ast_print_program(Programa* p);
+void ast_print_bloco(Bloco* b, int indent);
+void ast_print_decls(Decl* d, int indent);
+void ast_print_cmds(Comando* c, int indent);
+void ast_print_expr(Expr* e, int indent);
+void ast_print_param_decl(ParamDecl* p, int indent);
 
 #endif

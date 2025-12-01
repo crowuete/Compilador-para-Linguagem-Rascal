@@ -8,7 +8,7 @@
 
 %option noyywrap yylineno
 
-ESPACO      [ \t\t\n]+
+ESPACO      [ \t\n]+
 ID          [a-zA-Z][a-zA-Z0-9_]*
 NUM         [0-9]+
 

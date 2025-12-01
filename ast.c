@@ -219,26 +219,8 @@ Comando* cmd_while(Expr* cond, Comando* body) {
 Comando* cmd_read(IdList* lista_id) {
     Comando *c = ALLOC(Comando);
     c->tipo = CMD_READ;
-    // Em READ, a lista_id é composta por IdList, não por Expr. 
-    // Mapeamos para a união que usa Expr* apenas para manter a consistência com o struct do .h,
-    // mas o uso semântico correto é IdList*. Vamos adaptar a união para suportar IdList* se for o caso.
-    // Como a união u.leitura espera Expr* lista_id, vamos converter IdList para uma lista de EXPR_VAR.
-    // **NOTA:** Essa conversão precisa ser feita no parser ou ajustar a struct do .h. 
-    // Assumindo que a gramática irá gerar uma lista de Expr (EXPR_VAR):
-    
-    // Simplificando: o parser deve gerar uma lista de Expr (EXPR_VAR) para READ/WRITE.
-    // Vou criar um construtor auxiliar para a lista de IDs
-    Expr *lista_expr_ids = NULL;
-    IdList *temp = lista_id;
-    while(temp != NULL) {
-        lista_expr_ids = adiciona_exp(lista_expr_ids, expr_id(temp->nome));
-        temp = temp->prox;
-    }
-    
-    // Libera a IdList temporária, pois os nomes foram copiados para a lista de Expr
-    idlist_free(lista_id); 
 
-    c->u.leitura.lista_id = lista_expr_ids;
+    c->u.leitura.lista_id = lista_id;
     c->prox = NULL;
     return c;
 }
@@ -321,7 +303,7 @@ Bloco* criar_bloco(Decl* decls_var, Decl* decls_subrotinas, Comando* comandos) {
 
 // --------------------- RAIZ (Programa) ---------------------
 
-Programa* programa(char* nome, Bloco* bloco_principal) {
+Programa* criar_programa(char* nome, Bloco* bloco_principal) {
     Programa *p = ALLOC(Programa);
     p->nome = strdup(nome);
     p->bloco_principal = bloco_principal;
@@ -348,14 +330,12 @@ void expr_free(Expr* e) {
     
     switch (e->tipo) {
         case EXPR_VAR:
-            // Libera o ID se for uma variável
-        case EXPR_CALL_FUNC:
-            // Libera o nome da função
-            if (e->u.id != NULL) free(e->u.id);
-            if (e->tipo == EXPR_CALL_FUNC) {
-                 expr_free(e->u.func.args_lista);
-            }
+            free(e->u.id);
             break;
+        case EXPR_CALL_FUNC:
+            free(e->u.func.nome);
+            expr_free(e->u.func.args_lista);
+        break;
         case EXPR_BIN:
             // Libera as sub-expressões
             expr_free(e->u.bin.esq);
@@ -397,7 +377,7 @@ void cmd_free(Comando* c) {
             cmd_free(c->u.loop.body);
             break;
         case CMD_READ:
-            expr_free(c->u.leitura.lista_id); // Lista de EXPR_VAR
+            idlist_free(c->u.leitura.lista_id); // Lista de EXPR_VAR
             break;
         case CMD_WRITE:
             expr_free(c->u.escrita.lista_exp);
