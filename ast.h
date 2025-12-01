@@ -223,6 +223,7 @@ void ast_print_bloco(Bloco* b, int indent);
 void ast_print_decls(Decl* d, int indent);
 void ast_print_cmds(Comando* c, int indent);
 void ast_print_expr(Expr* e, int indent);
+void ast_print_idlist(IdList* ids, int indent);
 void ast_print_param_decl(ParamDecl* p, int indent);
 
 #endif

@@ -2,17 +2,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "ast.h"
 #include "parser.tab.h"
 
 %}
 
 %option noyywrap yylineno
 
-ESPACO      [ \t\n]+
+ESPACO      [ \r\t\n]+
 ID          [a-zA-Z][a-zA-Z0-9_]*
 NUM         [0-9]+
 
 %%
+
+"\xef\xbb\xbf"      { /* ignore UTF-8 BOM */ }
+
+{ESPACO}            { /* ignora */ }
 
 "program"           { return TK_PROGRAM; }
 "procedure"         { return PROCEDURE; }
@@ -55,8 +60,6 @@ NUM         [0-9]+
 "+"                 { return '+'; }
 "-"                 { return '-'; }
 "*"                 { return '*'; }
-
-{ESPACO}            { /* ignora */ }
 
 .                   { printf("ERRO LÉXICO na linha %d: símbolo ilegal %c\n", yylineno, yytext[0]); return 0; }
 
